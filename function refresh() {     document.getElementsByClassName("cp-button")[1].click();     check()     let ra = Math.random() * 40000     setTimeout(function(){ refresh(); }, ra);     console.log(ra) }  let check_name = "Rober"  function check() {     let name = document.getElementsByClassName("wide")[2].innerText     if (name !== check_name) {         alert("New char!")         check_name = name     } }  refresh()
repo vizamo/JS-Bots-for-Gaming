@@ -1,0 +1,19 @@
+function refresh() {
+    document.getElementsByClassName("cp-button")[1].click();
+    check()
+    let ra = Math.random() * 40000
+    setTimeout(function(){ refresh(); }, ra);
+    console.log(ra)
+}
+
+let check_name = "Rober"
+
+function check() {
+    let name = document.getElementsByClassName("wide")[2].innerText
+    if (name !== check_name) {
+        alert("New char!")
+        check_name = name
+    }
+}
+
+refresh()
