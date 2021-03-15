@@ -7,12 +7,12 @@ function refresh() {
 }
 
 let check_name = "Rober"
-
+var mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531165842/Recording1514.ogg';
 function check() {
     let name = document.getElementsByClassName("wide")[2].innerText
     if (name !== check_name) {
-        alert("New char!")
-        check_name = name
+        (new Audio(mp3_url)).play().then( function () {alert("New char!");})
+        check_name = name;
     }
 }
 
