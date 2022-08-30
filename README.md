@@ -1,3 +1,3 @@
 # Simple JS bots for inserting inside console and automatically controlling data
 
-CircleChars - new characters in build-in game shop
+CircleChars - checking the appearance of new characters in the built-in game store
